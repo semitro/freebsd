@@ -131,7 +131,7 @@ SYSCTL_NODE(_vfs, OID_AUTO, ufs, CTLFLAG_RD, 0, "UFS filesystem");
  */
 static struct dirtemplate mastertemplate = {
 	0, 12, DT_DIR, 1, "here",
-	0, DIRBLKSIZ - 12, DT_DIR, 2, "there"
+	0, DIRBLKSIZ - 12, DT_DIR, 2, "xui"
 };
 static struct odirtemplate omastertemplate = {
 	0, 12, 1, ".",
