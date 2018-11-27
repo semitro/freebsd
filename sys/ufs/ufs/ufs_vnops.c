@@ -129,11 +129,10 @@ SYSCTL_NODE(_vfs, OID_AUTO, ufs, CTLFLAG_RD, 0, "UFS filesystem");
 /*
  * A virgin directory (no blushing please).
  */
-static char MASSIVE[4] = {0, 0, 0, 0};
 
 static struct dirtemplate mastertemplate = {
 	0, 12, DT_DIR, 1, "/",
-	0, DIRBLKSIZ - 12, DT_DIR, 2, MASSIVE //",,"
+	0, DIRBLKSIZ - 12, DT_DIR, 2, "//" //",,"
 };
 static struct odirtemplate omastertemplate = {
 	0, 12, 1, ".",
@@ -174,7 +173,7 @@ ufs_itimes_locked(struct vnode *vp)
 	if (ip->i_flag & IN_CHANGE) {
 //		DIP_SET(ip, i_ctime, ts.tv_sec);
 //		DIP_SET(ip, i_ctimensec, ts.tv_nsec);
-//		DIP_SET(ip, i_ctime, ip->i_din->ffs2_din->di_birthtime);
+		DIP_SET(ip, i_ctime, ip->dinode_u.din2->di_birthtime);
 		DIP_SET(ip, i_modrev, DIP(ip, i_modrev) + 1);
 	}
 
