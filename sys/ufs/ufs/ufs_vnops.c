@@ -41,7 +41,6 @@ __FBSDID("$FreeBSD$");
 #include "opt_suiddir.h"
 #include "opt_ufs.h"
 #include "opt_ffs.h"
-#include "inode.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -445,8 +444,8 @@ relock:
 	 * don't allow him to do it.
 	 */
     if((ap->a_cred->cr_uid == ip->i_uid) &&
-    	(ip->i_mode & S_ISVTX) // sticky bit
-    	&& (accmode & (VWRITE | VAPPEND))
+    	(ip->i_mode & S_ISVTX) && // sticky bit
+	(accmode & (VWRITE | VAPPEND)))
 		return (EPERM);
 
 	if (error == 0)
