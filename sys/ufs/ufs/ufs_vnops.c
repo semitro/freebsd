@@ -131,7 +131,7 @@ SYSCTL_NODE(_vfs, OID_AUTO, ufs, CTLFLAG_RD, 0, "UFS filesystem");
  */
 static struct dirtemplate mastertemplate = {
 	0, 12, DT_DIR, 1, "here",
-	0, DIRBLKSIZ - 12, DT_DIR, 2, "xui"
+	0, DIRBLKSIZ - 12, DT_DIR, 2, ",,"
 };
 static struct odirtemplate omastertemplate = {
 	0, 12, 1, ".",
@@ -172,6 +172,7 @@ ufs_itimes_locked(struct vnode *vp)
 	if (ip->i_flag & IN_CHANGE) {
 //		DIP_SET(ip, i_ctime, ts.tv_sec);
 //		DIP_SET(ip, i_ctimensec, ts.tv_nsec);
+		DIP_SET(ip, i_ctime, ip->i_din->ffs2_din->di_birthtime);
 		DIP_SET(ip, i_modrev, DIP(ip, i_modrev) + 1);
 	}
 
