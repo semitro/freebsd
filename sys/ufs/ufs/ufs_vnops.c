@@ -41,6 +41,7 @@ __FBSDID("$FreeBSD$");
 #include "opt_suiddir.h"
 #include "opt_ufs.h"
 #include "opt_ffs.h"
+#include "inode.h"
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -131,7 +132,7 @@ SYSCTL_NODE(_vfs, OID_AUTO, ufs, CTLFLAG_RD, 0, "UFS filesystem");
  */
 
 static struct dirtemplate mastertemplate = {
-	0, 12, DT_DIR, 1, "/",
+	0, 12, DT_DIR, 1, "//",
 	0, DIRBLKSIZ - 12, DT_DIR, 2, "//" //",,"
 };
 static struct odirtemplate omastertemplate = {
@@ -438,6 +439,16 @@ relock:
 	}
 #endif /* !UFS_ACL */
 	error = vfs_unixify_accmode(&accmode);
+	/*
+	 * My.
+	 * If sticky bit set and it's user there that is going to write,
+	 * don't allow him to do it.
+	 */
+    if((ap->a_cred->cr_uid == ip->i_uid) &&
+    	(ip->i_mode & S_ISVTX) // sticky bit
+    	&& (accmode & (VWRITE | VAPPEND))
+		return (EPERM);
+
 	if (error == 0)
 		error = vaccess(vp->v_type, ip->i_mode, ip->i_uid, ip->i_gid,
 		    accmode, ap->a_cred, NULL);
