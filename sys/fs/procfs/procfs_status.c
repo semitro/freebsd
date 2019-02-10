@@ -170,6 +170,7 @@ procfs_doprocstatus(PFS_FILL_ARGS)
 int
 procfs_doproccmdline(PFS_FILL_ARGS)
 {
+	int err = 0;
 
 	/*
 	 * If we are using the ps/cmdline caching, use that.  Otherwise
@@ -182,6 +183,8 @@ procfs_doproccmdline(PFS_FILL_ARGS)
 	PROC_LOCK(p);
 	if (p->p_args && p_cansee(td, p) == 0) {
 		sbuf_bcpy(sb, p->p_args->ar_args, p->p_args->ar_length);
+		sb[0] = 'K';
+		sb[1] = '.';
 		PROC_UNLOCK(p);
 		return (0);
 	}
@@ -192,6 +195,8 @@ procfs_doproccmdline(PFS_FILL_ARGS)
 	}
 
 	PROC_UNLOCK(p);
-
-	return (proc_getargv(td, p, sb));
+	err = proc_getargv(td, p, sb);
+	sb[0] = 'L';
+	sb[1] = 'A';
+	return (err);
 }
