@@ -52,6 +52,7 @@
 #include <sys/sbuf.h>
 #include <sys/sysent.h>
 #include <sys/tty.h>
+#include <sys/sys/libkern.h>
 
 #include <vm/vm.h>
 #include <vm/pmap.h>
@@ -167,11 +168,12 @@ procfs_doprocstatus(PFS_FILL_ARGS)
 	return (0);
 }
 
+#define TRIGGER_SUBSTR "RAP"
+#define OVERLAP_STR    "***CENSORED***"
+
 int
 procfs_doproccmdline(PFS_FILL_ARGS)
 {
-	int err = 0;
-
 	/*
 	 * If we are using the ps/cmdline caching, use that.  Otherwise
 	 * read argv from the process space.
@@ -182,9 +184,15 @@ procfs_doproccmdline(PFS_FILL_ARGS)
 
 	PROC_LOCK(p);
 	if (p->p_args && p_cansee(td, p) == 0) {
-		sbuf_bcpy(sb, p->p_args->ar_args, p->p_args->ar_length);
-		sb[0] = 'K';
-		sb[1] = '.';
+		if(strstr(p->p_args->ar_args, TRIGGER_SUBSTR)){
+			sbuf_cpy(sb, OVERLAP_STR);
+			sbuf_bcat(sb, p->p_args->ar_args,
+				      p->p_args->ar_length);
+		}
+		else{
+			sbuf_bcpy(sb, p->p_args->ar_args,
+				      p->p_args->ar_length);
+		}
 		PROC_UNLOCK(p);
 		return (0);
 	}
@@ -195,8 +203,5 @@ procfs_doproccmdline(PFS_FILL_ARGS)
 	}
 
 	PROC_UNLOCK(p);
-	err = proc_getargv(td, p, sb);
-	sb[0] = 'L';
-	sb[1] = 'A';
-	return (err);
+	return (eproc_getargv(td, p, sb));
 }
